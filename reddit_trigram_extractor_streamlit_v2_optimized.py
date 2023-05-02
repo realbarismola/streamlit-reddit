@@ -28,11 +28,10 @@ nltk.download('punkt')
 nltk.download('stopwords')
 import streamlit as st
 
-st.set_page_config(page_title='Reddit Topic Finder', page_icon=':bar_chart:', layout='wide')
-
 st.title('Reddit Topic Finder')
 
 def main():
+    start_time = time.time()
     # Set up the Reddit API connection
     reddit = praw.Reddit(client_id='nrGPL_tS8GZIp8ccFFDodw',
                          client_secret='j8KG735o7cN_h-DPdNdePekW7FL5tg',
@@ -45,9 +44,8 @@ def main():
     if not subreddit_name:
         return
 
-    with st.spinner('Extracting trigrams...'):
-        start_time = time.time()
-
+    # Show a message that the tool is processing the query
+    with st.spinner('Processing the query. Please wait...'):
         try:
             # Get the top posts from the subreddit
             subreddit = reddit.subreddit(subreddit_name)
@@ -84,9 +82,9 @@ def main():
         except Exception as e:
             st.write(f'Error: {e}')
 
-        # Measure the elapsed time and display it to the user
-        elapsed_time = time.time() - start_time
-        st.write(f'Time elapsed: {elapsed_time:.2f} seconds')
-
+    # Measure the elapsed time and display it to the user
+    elapsed_time = time.time() - start_time
+    st.write(f'Time elapsed: {elapsed_time:.2f} seconds')
+    
 if __name__ == '__main__':
     main()
