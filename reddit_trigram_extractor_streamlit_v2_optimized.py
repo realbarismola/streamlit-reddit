@@ -28,10 +28,11 @@ nltk.download('punkt')
 nltk.download('stopwords')
 import streamlit as st
 
+st.set_page_config(page_title='Reddit Topic Finder', page_icon=':bar_chart:', layout='wide')
+
 st.title('Reddit Topic Finder')
 
 def main():
-    start_time = time.time()
     # Set up the Reddit API connection
     reddit = praw.Reddit(client_id='nrGPL_tS8GZIp8ccFFDodw',
                          client_secret='j8KG735o7cN_h-DPdNdePekW7FL5tg',
@@ -44,45 +45,48 @@ def main():
     if not subreddit_name:
         return
 
-    try:
-        # Get the top posts from the subreddit
-        subreddit = reddit.subreddit(subreddit_name)
-        all_posts = subreddit.top(limit=None)
+    with st.spinner('Extracting trigrams...'):
+        start_time = time.time()
 
-        # Extract trigrams from the posts
-        trigrams = []
-        for post in all_posts:
-            # Combine the title and body of the post
-            text = post.title + ' ' + post.selftext
-            # Tokenize the text into words
-            words = nltk.word_tokenize(text.lower())
-            # Remove stop words and punctuation marks
-            stop_words = set(stopwords.words('english'))
-            words = [word for word in words if word.isalpha() and word not in stop_words]
-            # Extract trigrams from the text
-            trigrams.extend(zip(words, islice(words, 1, None), islice(words, 2, None)))
+        try:
+            # Get the top posts from the subreddit
+            subreddit = reddit.subreddit(subreddit_name)
+            all_posts = subreddit.top(limit=None)
 
-        # Create a dictionary for the trigrams and their frequency
-        trigram_dict = Counter()
-        for trigram in trigrams:
-            trigram_dict[trigram] += 1
+            # Extract trigrams from the posts
+            trigrams = []
+            for post in all_posts:
+                # Combine the title and body of the post
+                text = post.title + ' ' + post.selftext
+                # Tokenize the text into words
+                words = nltk.word_tokenize(text.lower())
+                # Remove stop words and punctuation marks
+                stop_words = set(stopwords.words('english'))
+                words = [word for word in words if word.isalpha() and word not in stop_words]
+                # Extract trigrams from the text
+                trigrams.extend(zip(words, islice(words, 1, None), islice(words, 2, None)))
 
-        # Remove trigrams that contain stop words
-        for trigram in list(trigram_dict):
-            if any(word in stop_words for word in trigram):
-                del trigram_dict[trigram]
+            # Create a dictionary for the trigrams and their frequency
+            trigram_dict = Counter()
+            for trigram in trigrams:
+                trigram_dict[trigram] += 1
 
-        # Print the top 10 most common trigrams
-        st.write('Top 10 most common trigrams:')
-        for trigram, count in trigram_dict.most_common(10):
-            st.write(f'{trigram} ({count} occurrences)')
+            # Remove trigrams that contain stop words
+            for trigram in list(trigram_dict):
+                if any(word in stop_words for word in trigram):
+                    del trigram_dict[trigram]
 
-    except Exception as e:
-        st.write(f'Error: {e}')
+            # Print the top 10 most common trigrams
+            st.write('Top 10 most common trigrams:')
+            for trigram, count in trigram_dict.most_common(10):
+                st.write(f'{trigram} ({count} occurrences)')
 
-    # Measure the elapsed time and display it to the user
-    elapsed_time = time.time() - start_time
-    st.write(f'Time elapsed: {elapsed_time:.2f} seconds')
+        except Exception as e:
+            st.write(f'Error: {e}')
+
+        # Measure the elapsed time and display it to the user
+        elapsed_time = time.time() - start_time
+        st.write(f'Time elapsed: {elapsed_time:.2f} seconds')
 
 if __name__ == '__main__':
     main()
