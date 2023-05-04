@@ -94,6 +94,6 @@ def main():
             st.write('Top 10 most common trigrams:')
             for trigram, count in trigram_dict.most_common(10):
                 st.write(f'{trigram}: {count}')
-            
+
 if __name__ == '__main__':
     main()
