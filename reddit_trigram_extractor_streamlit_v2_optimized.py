@@ -96,4 +96,4 @@ def main():
                 st.write(f'{trigram}: {count}')
             
 if name == 'main':
-main()
+    main()
